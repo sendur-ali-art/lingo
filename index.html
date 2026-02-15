@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ŞENDUR TÜRKİYE: Harflerin Dansı! 🕺💃</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+        :root {
+            --green: #6aaa64; --yellow: #c9b458; --gray: #787c7e;
+            --light-gray: #d3d6da; --primary: #69bff8; --danger: #E91E63;
+        }
+        body {
+            font-family: 'Poppins', sans-serif; margin: 0; display: flex; align-items: center;
+            justify-content: center; min-height: 100vh;
+            background: linear-gradient(135deg, #d16ba5, #c777b9, #ba83ca, #aa8fd8, #9a9ae1); color: #333;
+            overflow-x: hidden;
+        }
+        #setupScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100; color: white;
+        }
+        .setup-box { background: white; padding: 30px; border-radius: 15px; color: #333; text-align: center; max-width: 400px; }
+        .setup-box input { display: block; margin: 10px auto; padding: 12px; width: 250px; border: 2px solid var(--primary); border-radius: 8px; font-size: 1rem; }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; width: 95%; max-width: 500px;
+        }
+        h1 { color: #5267f0; font-size: 1.1rem; margin-bottom: 15px; }
+        
+        .player-status { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .player-card { padding: 10px; border-radius: 10px; background: #f0f0f0; width: 45%; transition: 0.3s; border: 2px solid transparent; }
+        .active-player { border-color: #5267f0; background: #e3f2fd; transform: scale(1.05); }
+
+        .word-board { display: grid; gap: 6px; margin-bottom: 15px; justify-content: center; }
+        .word-row { display: flex; gap: 6px; }
+        .letter-box {
+            width: 42px; height: 42px; background: #fff; border: 2px solid var(--light-gray);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; font-weight: bold; text-transform: uppercase; border-radius: 6px;
+        }
+        .green { background: var(--green) !important; color: white; border-color: var(--green) !important; }
+        .yellow { background: var(--yellow) !important; color: white; border-color: var(--yellow) !important; }
+        .gray { background: var(--gray) !important; color: white; border-color: var(--gray) !important; }
+
+        .controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; align-items: center; }
+        #guessInput { padding: 10px; font-size: 1.2rem; width: 130px; text-align: center; border: 2px solid var(--light-gray); border-radius: 10px; text-transform: uppercase; outline: none; }
+        
+        #micBtn { background: var(--danger); color: white; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: none; outline: none; transition: 0.3s; }
+        #micBtn.listening { animation: pulse 1s infinite; background: var(--green); box-shadow: 0 0 15px var(--green); }
+        
+        .keyboard { display: grid; gap: 5px; margin-top: 10px; }
+        .kb-row { display: flex; justify-content: center; gap: 4px; }
+        .key { padding: 10px 5px; min-width: 32px; background: var(--light-gray); border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+
+        #message { height: 30px; font-weight: bold; margin-bottom: 10px; color: #E91E63; font-size: 1rem; }
+        #levelProgress { font-size: 0.9rem; color: #555; margin-bottom: 10px; font-weight: bold; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+<div id="setupScreen">
+    <div class="setup-box">
+        <h2>🕺 ŞENDUR TÜRKİYE 💃</h2>
+        <input type="text" id="p1NameInput" placeholder="1. Oyuncu Adı">
+        <input type="text" id="p2NameInput" placeholder="2. Oyuncu Adı">
+        <button id="startBtn" style="background: #5267f0; color: white; width: 100%; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">OYUNU BAŞLAT</button>
+    </div>
+</div>
+
+<div class="game-container">
+    <h1>🕺 Harflerin Dansı! 💃</h1>
+    
+    <div class="player-status">
+        <div id="card0" class="player-card active-player">
+            <div id="p0Name">Ege</div>
+            <div id="p0Score" style="font-size: 1.2rem; font-weight: bold;">0</div>
+        </div>
+        <div id="card1" class="player-card">
+            <div id="p1Name">Esra</div>
+            <div id="p1Score" style="font-size: 1.2rem; font-weight: bold;">0</div>
+        </div>
+    </div>
+
+    <div id="levelProgress">Yükleniyor...</div>
+    <div id="wordBoard" class="word-board"></div>
+    <div id="message"></div>
+
+    <div class="controls">
+        <input type="text" id="guessInput" autocomplete="off" spellcheck="false">
+        <button id="micBtn" title="Sürekli Dinleme">🎤</button>
+        <div style="background: #333; color: #fff; padding: 10px; border-radius: 10px; font-weight: bold; min-width: 45px;">
+            <span id="timer">60</span>s
+        </div>
+    </div>
+
+    <div class="keyboard" id="keyboard"></div>
+</div>
+
+<script>
+    // --- SES SİSTEMİ ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSfx(freq, type, duration) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+    const sfx = {
+        success: () => { playSfx(600, 'sine', 0.2); setTimeout(()=>playSfx(900, 'sine', 0.3), 100); },
+        fail: () => { playSfx(180, 'sawtooth', 0.5); },
+        tick: () => { playSfx(450, 'sine', 0.05); }
+    };
+
+    // --- TEMİZLENMİŞ KELİME DEPOSU ---
+    const wordList = {
+        4: ["AÇIK", "ADAM", "ADAY", "AĞAÇ", "AKIL", "ALAY", "ALET", "ANNE", "ARKA", "ARMA", "ARTI", "ATEŞ", "ATOM", "AYAK", "AYNA", "BATI", "BİNA", "CEZA", "ÇATI", "DOĞA", "ELMA", "ESAS", "FARE", "GİŞE", "HATA", "IŞIK", "İLAÇ", "İSİM", "KALE", "KAPI", "KURS", "MOLA", "MÜZE", "OCAK", "OKUL", "OLAY", "ORDA", "ÖYKÜ", "PARA", "ROTA", "SAAT", "SORU", "ŞAKA", "TAKI", "UÇAK", "UMUT", "UYKU", "VAZO", "YAPI", "YENİ"],
+        5: ["ABACI", "ACABA", "ACELE", "ADALE", "AHBAP", "AHENK", "AHLAK", "AKREP", "AKŞAM", "ALARM", "ALTIN", "AMBAR", "AMPUL", "ARABA", "AYDIN", "BAHAR", "BAKIŞ", "BEKÇİ", "BELGE", "BEYAZ", "CEKET", "CİHAZ", "ÇOCUK", "DAİRE", "DENİZ", "DÜNYA", "EMLAK", "ESNAF", "FİKRİ", "GEBZE", "GÜNEŞ", "HABER", "HAYAL", "İNSAN", "KABLO", "KALEM", "KİTAP", "LİMAN", "MASAL", "MEYVE", "MÜZİK", "NEFES", "ORMAN", "ÖRNEK", "PAMUK", "RADYO", "SAHNE", "TARİH", "UÇKUN", "VÜCUT", "YALAN", "ZAMAN"],
+        6: ["ADALET", "AFİYET", "AĞABEY", "AKARSU", "AKASMA", "AKASYA", "AKILCI", "ALAMET", "ALANYA", "AMATÖR", "ADAPTE", "ABARTI", "BALKON", "BARDAK", "BAŞARI", "BEYAZT", "BİNGÖL", "CEVHER", "ÇEYREK", "DESTAN", "DİKKAT", "DOKTOR", "EKİNOX", "FIRTIN", "GAZETE", "GURBET", "HAYVAN", "İSKELE", "KAPTAN", "KLAVYE", "LASTİK", "MERKEZ", "MUTFAK", "PEYNİR", "REHBER", "SÖZLÜK", "TİMSAH", "VİCDAN", "YARDIM", "ZAYIFL", "ZEYTİN", "İŞLEME"]
+    };
+
+    let usedWords = new Set();
+    let currentPlayer = 0;
+    let scores = [0, 0];
+    let currentLevel = 4;
+    let levelStep = 1;
+    let targetWord = "";
+    let attempts = 0;
+    const maxAttempts = 6;
+    let timerInterval;
+    let timeLeft = 60;
+    let isMicActive = false;
+
+    // --- TÜRKÇE KARAKTER FIX FONKSİYONU ---
+    function trUpper(str) {
+        return str.toLocaleUpperCase('tr-TR');
+    }
+
+    // --- SES TANIMA ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'tr-TR';
+        recognition.continuous = false;
+        
+        recognition.onresult = (event) => {
+            let transcript = trUpper(event.results[0][0].transcript.trim().replace(/\s/g, ''));
+            if (transcript.length > currentLevel) transcript = transcript.substring(0, currentLevel);
+            
+            const inputField = document.getElementById('guessInput');
+            inputField.value = transcript; 
+
+            if (transcript.length === currentLevel) {
+                setTimeout(() => {
+                    submitGuess(transcript);
+                    inputField.value = ""; 
+                }, 500); 
+            }
+        };
+
+        recognition.onend = () => { if (isMicActive) recognition.start(); };
+    }
+
+    document.getElementById('micBtn').onclick = () => {
+        if (!recognition) return alert("Sesli giriş desteklenmiyor.");
+        isMicActive = !isMicActive;
+        if (isMicActive) {
+            recognition.start();
+            document.getElementById('micBtn').classList.add('listening');
+        } else {
+            recognition.stop();
+            document.getElementById('micBtn').classList.remove('listening');
+        }
+    };
+
+    // --- OYUN AKIŞI ---
+    document.getElementById('startBtn').onclick = () => {
+        document.getElementById('p0Name').innerText = document.getElementById('p1NameInput').value || "Ege";
+        document.getElementById('p1Name').innerText = document.getElementById('p2NameInput').value || "Esra";
+        document.getElementById('setupScreen').style.display = 'none';
+        initRound();
+    };
+
+    function initRound() {
+        attempts = 0;
+        timeLeft = 60;
+        let available = wordList[currentLevel].filter(w => !usedWords.has(w));
+        if (available.length === 0) { usedWords.clear(); available = wordList[currentLevel]; }
+        targetWord = available[Math.floor(Math.random() * available.length)];
+        usedWords.add(targetWord);
+
+        document.getElementById('guessInput').value = "";
+        document.getElementById('guessInput').maxLength = currentLevel;
+        document.getElementById('levelProgress').innerText = `Seviye: ${currentLevel} Harfli (${levelStep}/3)`;
+        
+        createBoard();
+        startTimer();
+    }
+
+    function createBoard() {
+        const board = document.getElementById('wordBoard');
+        board.innerHTML = "";
+        for (let i = 0; i < maxAttempts; i++) {
+            const row = document.createElement('div');
+            row.className = 'word-row';
+            for (let j = 0; j < currentLevel; j++) {
+                const box = document.createElement('div');
+                box.className = 'letter-box';
+                row.appendChild(box);
+            }
+            board.appendChild(row);
+        }
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        document.getElementById('timer').innerText = timeLeft;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft < 10 && timeLeft > 0) sfx.tick();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                sfx.fail();
+                showMessage(`SÜRE BİTTİ! Doğru Kelime: ${targetWord}`);
+                setTimeout(switchPlayer, 3000);
+            }
+        }, 1000);
+    }
+
+    document.getElementById('guessInput').onkeypress = (e) => {
+        if (e.key === 'Enter') {
+            const val = trUpper(e.target.value);
+            if (val.length === currentLevel) {
+                submitGuess(val);
+                e.target.value = "";
+            } else {
+                showMessage(`${currentLevel} harf giriniz!`);
+            }
+        }
+    };
+
+    function submitGuess(guess) {
+        const rows = document.querySelectorAll('.word-row');
+        if (!rows[attempts]) return;
+        
+        const boxes = rows[attempts].querySelectorAll('.letter-box');
+        let tempTarget = targetWord.split('');
+        let res = new Array(currentLevel).fill('gray');
+
+        // Yeşil kontrolü (Türkçe karakter uyumlu)
+        for(let i=0; i<currentLevel; i++) {
+            if(guess[i] === targetWord[i]) {
+                res[i] = 'green';
+                tempTarget[i] = null;
+            }
+        }
+        // Sarı kontrolü
+        for(let i=0; i<currentLevel; i++) {
+            if(res[i] === 'gray' && tempTarget.includes(guess[i])) {
+                res[i] = 'yellow';
+                tempTarget[tempTarget.indexOf(guess[i])] = null;
+            }
+        }
+
+        res.forEach((cls, i) => {
+            boxes[i].innerText = guess[i];
+            setTimeout(() => boxes[i].classList.add(cls), i * 100);
+        });
+
+        if (guess === targetWord) {
+            clearInterval(timerInterval);
+            sfx.success();
+            scores[currentPlayer] += currentLevel * 10;
+            updateUI();
+            showMessage("MUHTEŞEM! Doğru tahmin.");
+            levelStep++;
+            if(levelStep > 3) { levelStep = 1; currentLevel = Math.min(currentLevel + 1, 6); }
+            setTimeout(initRound, 2500);
+        } else {
+            attempts++;
+            if (attempts >= maxAttempts) {
+                clearInterval(timerInterval);
+                sfx.fail();
+                showMessage(`HAKKINIZ BİTTİ! Kelime: ${targetWord}`);
+                setTimeout(switchPlayer, 3500);
+            }
+        }
+    }
+
+    function switchPlayer() {
+        currentPlayer = currentPlayer === 0 ? 1 : 0;
+        document.getElementById('card0').classList.toggle('active-player');
+        document.getElementById('card1').classList.toggle('active-player');
+        initRound();
+    }
+
+    function updateUI() {
+        document.getElementById('p0Score').innerText = scores[0];
+        document.getElementById('p1Score').innerText = scores[1];
+    }
+
+    function showMessage(msg) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.innerText = msg;
+        setTimeout(() => { if(msgDiv.innerText === msg) msgDiv.innerText = ""; }, 3000);
+    }
+
+    // --- KLAVYE ---
+    const keys = "ERTÜYIOPĞÜASDFGHKLŞİZXCVBÖMNÇ";
+    const kb = document.getElementById('keyboard');
+    let row = document.createElement('div'); row.className='kb-row';
+    keys.split('').forEach((k, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'key'; btn.innerText = k;
+        btn.onclick = () => {
+            const input = document.getElementById('guessInput');
+            if(input.value.length < currentLevel) input.value += k;
+        };
+        row.appendChild(btn);
+        if(i === 9 || i === 19) { kb.appendChild(row); row = document.createElement('div'); row.className='kb-row'; }
+    });
+    kb.appendChild(row);
+</script>
+</body>
+</html>
